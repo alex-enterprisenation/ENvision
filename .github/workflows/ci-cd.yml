@@ -1,0 +1,84 @@
+# GitHub Actions CI/CD Workflow
+# This is a workflow for the Multi-Tenant SaaS AI Platform
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Placeholder for backend testing
+  backend-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    - name: Restore dependencies
+      run: dotnet restore src/backend/
+    - name: Build
+      run: dotnet build src/backend/ --no-restore
+    - name: Test
+      run: dotnet test src/backend/ --no-build --verbosity normal
+
+  # Placeholder for frontend testing
+  frontend-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: src/frontend/package-lock.json
+    - name: Install dependencies
+      run: npm ci --prefix src/frontend/
+    - name: Lint
+      run: npm run lint --prefix src/frontend/
+    - name: Type check
+      run: npm run type-check --prefix src/frontend/
+    - name: Test
+      run: npm run test --prefix src/frontend/
+
+  # Placeholder for AI engine testing
+  ai-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        cd src/ai/
+        pip install -r requirements.txt
+    - name: Lint
+      run: |
+        cd src/ai/
+        flake8 .
+    - name: Test
+      run: |
+        cd src/ai/
+        pytest
+
+  # Placeholder for deployment
+  deploy:
+    needs: [backend-test, frontend-test, ai-test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Deploy to staging
+      run: echo "Deploy to staging environment"
+    # TODO: Add actual deployment steps 
